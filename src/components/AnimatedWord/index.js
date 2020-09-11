@@ -4,13 +4,13 @@ import './style.css';
 
 const staggerConfig = {
   delayedAnimation: {
-    speed: .1,
+    speed: 1,
   },
 };
 
 const spring = {
-  stiffness: 300,
-  damping: 14,
+  stiffness: 400,
+  damping: 16,
 };
 
 const initialState = {

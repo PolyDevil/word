@@ -26,7 +26,7 @@
   pointer-events: none;
   position: relative;
   text-decoration: none;
-  font-size: calc(4vmin + .5vh + 2ex);
+  font-size: calc(2vmin + 2vh + 2ex);
 }
 .Letter[data-state="--in"] {
   transform: translateY(1ex);
