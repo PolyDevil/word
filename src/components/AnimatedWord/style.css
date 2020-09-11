@@ -1,0 +1,38 @@
+.Sentence {
+  position: relative;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.Placeholder {
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  user-select: none;
+}
+
+.Word {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  user-select: none;
+}
+
+.Letter {
+  pointer-events: none;
+  position: relative;
+  text-decoration: none;
+  font-size: calc(4vmin + .5vh + 2ex);
+}
+.Letter[data-state="--in"] {
+  transform: translateY(1ex);
+  opacity: 0;
+}
+.Letter[data-state="--out"] {
+  transform: translateY(-.5ex);
+  opacity: 0;
+}
