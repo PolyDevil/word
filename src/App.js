@@ -1,11 +1,6 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { Flipper, Flipped } from 'react-flip-toolkit';
 import './App.css';
-
-const placeholder = Array.from('placeholder');
-
-const option1 = Array.from('word');
-const option2 = Array.from('exe');
 
 const staggerConfig = {
   delayedAnimation: {
@@ -18,36 +13,78 @@ const spring = {
   damping: 14,
 };
 
-function App() {
-  const [data1, setData1] = useState(option1);
-  const [data2, setData2] = useState(option2);
-  const [index, setIndex] = useState(0);
-  const swap = () => {
-    if (index === 0) {
-      setData1(option2);
-      setData2(option1);
-      setIndex(1);
-    } else {
-      setData1(option1);
-      setData2(option2);
-      setIndex(0);
-    }
-    setShow(false);
-  };
+const placeholder = Array.from('placeholder');
+const options = [
+  'word',
+  'exe',
+  'list',
+  'melon',
+];
 
-  const [show, setShow] = useState(false);
-  const toggle = () => {
-    console.log('toggle', show);
-    if (show) {
-      swap();
-    } else {
-      setShow(!show);
+const initialState = {
+  isInTransition: false,
+  isSwapped     : false,
+  index         : 0,
+  current       : Array.from(options[0]),
+  next          : Array.from(options[1]),
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "startTransition": {
+      return {
+        ...state,
+        isInTransition: true,
+      }
     }
-  };
+    case "finishTransition": {
+      return {
+        ...state,
+        isInTransition: false,
+        isSwapped     : false,
+      }
+    }
+    case "resetTransition": {
+      const index = (state.index + options.length + 1) % options.length;
+
+      return {
+        ...state,
+        index,
+        isSwapped: true,
+        current  : Array.from(options[index]),
+        next     : Array.from(options[(state.index + options.length + 2) % options.length]),
+      }
+    }
+    default: {
+      return state
+    }
+  }
+}
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  function next() {
+    if (!state.isInTransition) {
+      dispatch({ type: 'startTransition' });
+    }
+  }
+
+  function handleComplete() {
+    if (state.isInTransition) {
+      dispatch({ type: 'finishTransition' });
+    } else if (!state.isSwapped) {
+      dispatch({ type: 'resetTransition' });
+    }
+  }
+
+  function shouldFlip(prevIsInTransition, currentIsInTransition) {
+    return currentIsInTransition && prevIsInTransition !== currentIsInTransition;
+  }
 
   return (
     <div className="App">
-      <div className="Sentence" onClick={toggle}>
+      <div className="Sentence" onClick={next}>
         <p className="Placeholder">
           {placeholder.map((d, i) => (
             <span key={i + d} className="Letter">
@@ -57,12 +94,17 @@ function App() {
         </p>
 
         <Flipper
-          flipKey={[show, index].join("")}
+          flipKey={state.current + state.isInTransition}
+          decisionData={state.isInTransition}
         >
           <p className="Word">
-            {data1.map((d, i) => (
-              <Flipped key={i + d} flipId={i + d}>
-                <del className={`Letter ${show ? '--out' : ''}`}>
+            {state.current.map((d, i) => (
+              <Flipped
+                key={i + d}
+                flipId={i + d + 'current'}
+                shouldFlip={shouldFlip}
+              >
+                <del className={`Letter ${state.isInTransition ? '--out' : ''}`}>
                   {d}
                 </del>
               </Flipped>
@@ -71,14 +113,21 @@ function App() {
         </Flipper>
 
         <Flipper
-          flipKey={[show, index].join("")}
+          flipKey={state.next + state.isInTransition}
+          decisionData={state.isInTransition}
           staggerConfig={staggerConfig}
           spring={spring}
+          onComplete={handleComplete}
         >
           <p className="Word">
-            {data2.map((d, i) => (
-              <Flipped key={i + d} flipId={i + d} stagger="delayedAnimation">
-                <ins className={`Letter ${show ? '' : '--initial'}`}>
+            {state.next.map((d, i) => (
+              <Flipped
+                key={i + d}
+                flipId={i + d + 'next'}
+                stagger="delayedAnimation"
+                shouldFlip={shouldFlip}
+              >
+                <ins className={`Letter ${state.isInTransition ? '' : '--in'}`}>
                   {d}
                 </ins>
               </Flipped>
