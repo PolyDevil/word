@@ -66,12 +66,23 @@ const reducer = (state, action) => {
 const shouldFlip = (prev, current) => current && current !== prev;
 
 function AnimatedWord({
+  id,
   data: {
     options,
     placeholder: placeholderString = '',
   },
+  animate,
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(
+    () => {
+      if (id === animate) {
+        dispatch({ type: 'startTransition' });
+      }
+    },
+    [id, animate]
+  );
 
   useEffect(
     () => dispatch({ type: 'setOptions', options }),
